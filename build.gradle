@@ -2,7 +2,13 @@
 
 buildscript {
     repositories {
-        jcenter()
+//        google()
+        mavenCentral()
+        maven {
+            url 'https://maven.google.com/'
+            name 'Google'
+        }
+        jcenter() //deprecated, read only
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:2.2.2'
@@ -14,7 +20,12 @@ buildscript {
 
 allprojects {
     repositories {
-        jcenter()
+        mavenCentral()
+        maven {
+            url 'https://maven.google.com/'
+            name 'Google'
+        }
+        jcenter() //deprecated, read only
     }
 }
 

@@ -1,53 +1,54 @@
 <android.support.percent.PercentRelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/activity_main"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:id="@+id/activity_main"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:background="@color/colorPrimary"
+  tools:context="de.pro_open.remotecontrol.MainActivity">
+  
+  <ScrollView
+    android:id="@+id/sv"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/background_light"
-    tools:context="de.pro_open.remotecontrol.MainActivity">
-
-    <ScrollView
-        android:id="@+id/sv"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@+id/pb">
-
-        <LinearLayout
-            android:id="@+id/ll"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"></LinearLayout>
-    </ScrollView>
-
-    <TextView
-        android:id="@+id/noserveronlinetv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:contextClickable="false"
-        android:textColor="@android:color/black"
-        android:textIsSelectable="true"
-        android:textSize="18sp"
-        android:visibility="invisible"
-        app:layout_marginLeftPercent="5%"
-        app:layout_marginTopPercent="5%" />
-
-    <ProgressBar
-
-        android:id="@+id/pb"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="22dp"
-        android:indeterminate="true"
-        app:layout_heightPercent="13.33%"
-        app:layout_marginTopPercent="5%"
-        app:layout_widthPercent="20%" />
+    android:layout_below="@+id/pb"
+    android:background="#CD2222">
+    
+    <LinearLayout
+      android:id="@+id/ll"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:orientation="vertical" />
+  </ScrollView>
+  
+  <TextView
+    android:id="@+id/noserveronlinetv"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_alignParentStart="true"
+    
+    android:layout_alignParentLeft="true"
+    android:layout_alignParentTop="true"
+    android:contextClickable="false"
+    android:textColor="@android:color/black"
+    android:textIsSelectable="true"
+    android:textSize="18sp"
+    android:visibility="invisible"
+    app:layout_marginLeftPercent="5%"
+    app:layout_marginTopPercent="5%" />
+  
+  <ProgressBar
+    
+    android:id="@+id/pb"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_alignParentTop="true"
+    android:layout_centerHorizontal="true"
+    android:layout_marginTop="22dp"
+    android:indeterminate="true"
+    app:layout_heightPercent="13.33%"
+    app:layout_marginTopPercent="5%"
+    app:layout_widthPercent="20%" />
 
 
 </android.support.percent.PercentRelativeLayout>
