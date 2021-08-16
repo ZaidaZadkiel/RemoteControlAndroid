@@ -1,6 +1,8 @@
 package de.pro_open.remotecontrol;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -31,28 +33,39 @@ public class MainActivity extends AppCompatActivity {
   View.OnClickListener oc = new View.OnClickListener() {
     @Override
     public void onClick(final View view) {
-      events.sendMessage(new Runnable() {
+      MainActivity.this.setTitle(getString(R.string.ConnectedTitle, server_ip));
+      server_ip = view.getTag().toString();
+      
+      TCPCallback cb = new TCPCallback() {
         @Override
-        public void run() {
-          try {
-            server_ip = view.getTag().toString();
-            MainActivity.this.runOnUiThread(
-              new Runnable() {
-                @Override
-                public void run() {
-                  MainActivity.this.setTitle(getString(R.string.ConnectedTitle, server_ip));
-                }
-              }
-            );
-
-            System.out.println("conToServer " + server_ip);
-            conToServer = TCPManager.connect(server_ip, 45340, false, null);
-          } catch (IOException e) {
-            e.printStackTrace();
-          }
-          
+        void callback(TcpConnection result) {
+          MainActivity.this.conToServer = result;
         }
-      });//.start();
+      };
+      events.sendMessage(NetworkLooper.TCPConnect(server_ip, 45340, cb));
+
+//        new Runnable() {
+//        @Override
+//        public void run() {
+//          try {
+////            server_ip = view.getTag().toString();
+////            MainActivity.this.runOnUiThread(
+////              new Runnable() {
+////                @Override
+////                public void run() {
+////                  MainActivity.this.setTitle(getString(R.string.ConnectedTitle, server_ip));
+////                }
+////              }
+////            );
+//
+//            System.out.println("conToServer " + server_ip);
+//            conToServer = TCPManager.connect(server_ip, 45340, false, null);
+//          } catch (IOException e) {
+//            e.printStackTrace();
+//          }
+//
+//        }
+//      });//.start();
       
       clientConnection();
     }
@@ -60,14 +73,14 @@ public class MainActivity extends AppCompatActivity {
   
   
   
-  private Runnable createRunnable(final TcpConnection conToServer, final String s){
-    return new Runnable() {
-      @Override
-      public void run() {
-        conToServer.writeLine(s);
-      }
-    };
-  }
+//  private Runnable createRunnable(final TcpConnection conToServer, final String s){
+//    return new Runnable() {
+//      @Override
+//      public void run() {
+//        conToServer.writeLine(s);
+//      }
+//    };
+//  }
   
   @SuppressLint("ClickableViewAccessibility")
   private void clientConnection() {
@@ -104,7 +117,7 @@ public class MainActivity extends AppCompatActivity {
 //              }
 //            }
             events.sendMessage(
-              createRunnable(conToServer, "mouse " + (int) (motionEvent.getX() - prevX) + " " + (int) (motionEvent.getY() - prevY))
+              events.sendLine(conToServer, "mouse " + (int) (motionEvent.getX() - prevX) + " " + (int) (motionEvent.getY() - prevY))
             );
             
             prevX = motionEvent.getX();
@@ -116,13 +129,13 @@ public class MainActivity extends AppCompatActivity {
           te = System.currentTimeMillis();
           if ((te - ts) < 150 && (int) (motionEvent.getX() - preX) < 20 && (int) (motionEvent.getY() - preY) < 20) {
             events.sendMessage(
-              createRunnable(conToServer, "leftClick")
+              NetworkLooper.sendLine(conToServer, "leftClick")
             );
 //            conToServer.writeLine("leftClick");
           } else if ((te - ts) > 150 && (int) (motionEvent.getX() - preX) < 20 && (int) (motionEvent.getY() - preY) < 20) {
 //            conToServer.writeLine("rightClick");
             events.sendMessage(
-              createRunnable(conToServer, "rightClick")
+              events.sendLine(conToServer, "rightClick")
             );
           }
         }
@@ -136,10 +149,21 @@ public class MainActivity extends AppCompatActivity {
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
+    broadcastUDP();
+  }
   
-    events.start();
-  
-    UDPBroadcast.startNewBroadcastRequest(4960, "", true, 20000, new UDPBroadcast.UDPBroadcastResponseListener() {
+  private void broadcastUDP() {
+    final int udpWaitTimeout = 2000;
+    TextView tv = (TextView) findViewById(R.id.noserveronlinetv);
+    tv.setVisibility(View.INVISIBLE);
+    LinearLayout ll = (LinearLayout) findViewById(R.id.ll);
+    ll.removeAllViews();
+    ProgressBar pb = (ProgressBar) findViewById(R.id.pb);
+    pb.setVisibility(View.VISIBLE);
+    
+    if(events!=null && !events.isAlive()) events.start();
+    
+    UDPBroadcast.startNewBroadcastRequest(4960, "ping", true, udpWaitTimeout, new UDPBroadcast.UDPBroadcastResponseListener() {
       @Override
       public void process(String response, final InetAddress address) {
         if (response != null && response.equalsIgnoreCase("server_online")) {
@@ -154,14 +178,17 @@ public class MainActivity extends AppCompatActivity {
         }
       }
     });
+    
+    
     new Thread(new Runnable() {
       @Override
       public void run() {
         try {
-          Thread.sleep(20000L);
+          Thread.sleep(udpWaitTimeout);
         } catch (InterruptedException e) {
           e.printStackTrace();
         }
+        
         runOnUiThread(new Runnable() {
           @Override
           public void run() {
@@ -192,7 +219,17 @@ public class MainActivity extends AppCompatActivity {
       pb.setVisibility(View.INVISIBLE);
     }
     if (server_on == false) {
+      Button b = (Button)findViewById(R.id.retryudpscan);
+      b.setVisibility(View.VISIBLE);
+      b.setOnClickListener( new View.OnClickListener(){
+        @Override
+        public void onClick(View v) {
+          broadcastUDP();
+        }
+      } );
+      
       TextView tv = (TextView) findViewById(R.id.noserveronlinetv);
+      tv.setBackgroundColor(Color.WHITE);
       tv.setText("No Server found!\nDownload the server software for Linux, Windows or Mac on www.test.de");
       tv.setVisibility(View.VISIBLE);
     } else {

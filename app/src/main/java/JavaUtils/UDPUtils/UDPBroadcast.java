@@ -62,6 +62,7 @@ public class UDPBroadcast {
                 System.out.println(">>> Request packet sent to: " + defaultBroadcastIP + " (DEFAULT)");
             } catch (Exception e) {
             }
+            
             // Broadcast the message over all the network interfaces
             Enumeration interfaces = NetworkInterface.getNetworkInterfaces();
             while (interfaces.hasMoreElements()) {

@@ -107,7 +107,7 @@ public class JavaDownloader {
             @Override
             public void run() {
                 try {
-                    downloadFile(url, target, null);
+                    downloadFile(url, target);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

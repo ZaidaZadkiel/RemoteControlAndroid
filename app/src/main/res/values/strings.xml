@@ -1,3 +1,6 @@
 <resources>
-    <string name="app_name">Remote Control</string>
+  <string name="app_name">Remote Control</string>
+  <string name="serverHostIP">Hostname: %1$s\nIP: %2$s</string>
+  <string name="ConnectedTitle">Connected to %1$s</string>
+  <string name="retryudpscanlabel">Retry Scan for PC Server</string>
 </resources>

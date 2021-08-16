@@ -2,10 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/RemoteControl.iml" filepath="$PROJECT_DIR$/RemoteControl.iml" />
-      <module fileurl="file://$PROJECT_DIR$/RemoteControlAndroid.iml" filepath="$PROJECT_DIR$/RemoteControlAndroid.iml" />
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/-1739258749/RemoteControlAndroid.app.iml" filepath="$PROJECT_DIR$/.idea/modules/-1739258749/RemoteControlAndroid.app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/-285979279/android.RemoteControlAndroid.iml" filepath="$PROJECT_DIR$/.idea/modules/-285979279/android.RemoteControlAndroid.iml" />
     </modules>
   </component>
 </project>
