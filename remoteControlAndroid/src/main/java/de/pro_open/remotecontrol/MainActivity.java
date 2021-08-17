@@ -59,7 +59,8 @@ public class MainActivity extends AppCompatActivity {
   
                       final RelativeLayout rl = (RelativeLayout) findViewById(R.id.activity_main);
                       rl.removeAllViews();
-                      rl.setOnTouchListener(new MyOnTouchListener(events, conToServer, MainActivity.this));
+//                      rl.setOnTouchListener(new onTouchSender(events, conToServer, MainActivity.this));
+                      rl.setOnClickListener(new onClickSender(events, conToServer, MainActivity.this));
                     }
                   });
   }
