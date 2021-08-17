@@ -1,24 +1,17 @@
 package de.pro_open.remotecontrol;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.text.TextUtils;
-import android.view.MotionEvent;
 import android.view.View;
-import android.widget.Button;
-import android.widget.LinearLayout;
-import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
+import android.widget.*;
 
-import java.io.IOException;
 import java.net.InetAddress;
 
-import JavaUtils.TCPManager.TCPManager;
 import JavaUtils.TCPManager.TcpConnection;
 import JavaUtils.UDPUtils.UDPBroadcast;
 
@@ -26,141 +19,98 @@ public class MainActivity extends AppCompatActivity {
   TcpConnection conToServer;
   NetworkLooper events = new NetworkLooper();
   Boolean server_on = false;
-  long ts = 0;
-  long te = 0;
-  String server_ip = "";
+  String server_ip = "unset";
   
   View.OnClickListener oc = new View.OnClickListener() {
     @Override
     public void onClick(final View view) {
-      MainActivity.this.setTitle(getString(R.string.ConnectedTitle, server_ip));
       server_ip = view.getTag().toString();
+      MainActivity.this.setTitle(getString(R.string.ConnectedTitle, server_ip));
       
       TCPCallback cb = new TCPCallback() {
         @Override
         void callback(TcpConnection result) {
-          MainActivity.this.conToServer = result;
+          connectionSuccess(result);
+        }
+  
+        @Override
+        void reject(String message) {
+          connectionRejected(message);
         }
       };
       events.sendMessage(NetworkLooper.TCPConnect(server_ip, 45340, cb));
-
-//        new Runnable() {
-//        @Override
-//        public void run() {
-//          try {
-////            server_ip = view.getTag().toString();
-////            MainActivity.this.runOnUiThread(
-////              new Runnable() {
-////                @Override
-////                public void run() {
-////                  MainActivity.this.setTitle(getString(R.string.ConnectedTitle, server_ip));
-////                }
-////              }
-////            );
-//
-//            System.out.println("conToServer " + server_ip);
-//            conToServer = TCPManager.connect(server_ip, 45340, false, null);
-//          } catch (IOException e) {
-//            e.printStackTrace();
-//          }
-//
-//        }
-//      });//.start();
       
-      clientConnection();
     }
   };
   
-  
-  
-//  private Runnable createRunnable(final TcpConnection conToServer, final String s){
-//    return new Runnable() {
-//      @Override
-//      public void run() {
-//        conToServer.writeLine(s);
-//      }
-//    };
-//  }
-  
-  @SuppressLint("ClickableViewAccessibility")
-  private void clientConnection() {
-    System.out.println("clientConnection flag");
-    
-    final RelativeLayout rl = (RelativeLayout) findViewById(R.id.activity_main);
-    rl.removeAllViews();
-    rl.setOnTouchListener(new View.OnTouchListener() {
-      float prevX = 0;
-      float prevY = 0;
-      float preX = 0;
-      float preY = 0;
-      int c = 0;
-  
-
-      
-      @Override
-      public boolean onTouch(View view, MotionEvent motionEvent) {
-        System.out.println("onTouch Event ok");
-        if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
-          prevX = motionEvent.getX();
-          prevY = motionEvent.getY();
-          preX = motionEvent.getX();
-          preY = motionEvent.getY();
-          ts = System.currentTimeMillis();
-        } else if (motionEvent.getAction() == MotionEvent.ACTION_MOVE) {
-          c++;
-          if (true) {
-          
-//            new Runnable() {
-//              @Override
-//              public void run() {
-//                conToServer.writeLine("mouse " + (int) (motionEvent.getX() - prevX) + " " + (int) (motionEvent.getY() - prevY));
-//              }
-//            }
-            events.sendMessage(
-              events.sendLine(conToServer, "mouse " + (int) (motionEvent.getX() - prevX) + " " + (int) (motionEvent.getY() - prevY))
-            );
-            
-            prevX = motionEvent.getX();
-            prevY = motionEvent.getY();
-            c = 0;
-          }
-        }
-        if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
-          te = System.currentTimeMillis();
-          if ((te - ts) < 150 && (int) (motionEvent.getX() - preX) < 20 && (int) (motionEvent.getY() - preY) < 20) {
-            events.sendMessage(
-              NetworkLooper.sendLine(conToServer, "leftClick")
-            );
-//            conToServer.writeLine("leftClick");
-          } else if ((te - ts) > 150 && (int) (motionEvent.getX() - preX) < 20 && (int) (motionEvent.getY() - preY) < 20) {
-//            conToServer.writeLine("rightClick");
-            events.sendMessage(
-              events.sendLine(conToServer, "rightClick")
-            );
-          }
-        }
-        return true;
-      }
-    });
+  private void connectionRejected(String s){
+    Toast.makeText(MainActivity.this.getBaseContext().getApplicationContext(),
+      "error connecting to server",
+      Toast.LENGTH_LONG ).show();
   }
   
+  @SuppressLint("ClickableViewAccessibility")
+  private void connectionSuccess(final TcpConnection connection) {
+    runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                      conToServer = connection;
+                      System.out.println("clientConnection success " + connection.isConnected());
+  
+                      final RelativeLayout rl = (RelativeLayout) findViewById(R.id.activity_main);
+                      rl.removeAllViews();
+                      rl.setOnTouchListener(new MyOnTouchListener(events, conToServer, MainActivity.this));
+                    }
+                  });
+  }
   
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    setContentView(R.layout.activity_main);
     broadcastUDP();
   }
   
-  private void broadcastUDP() {
+  @Override
+  public void onBackPressed() {
+    
+    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+    builder.setTitle(R.string.app_name);
+    builder.setIcon(R.mipmap.ic_launcher);
+    builder.setMessage("Do you want to exit?")
+      .setCancelable(false)
+      .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+        public void onClick(DialogInterface dialog, int id) {
+          conToServer.disconnect();
+          finish();
+        }
+      })
+      .setNegativeButton("No", new DialogInterface.OnClickListener() {
+        public void onClick(DialogInterface dialog, int id) {
+          dialog.cancel();
+        }
+      });
+    AlertDialog alert = builder.create();
+    alert.show();
+    
+  }
+  
+  public void broadcastUDP() {
     final int udpWaitTimeout = 2000;
+    setContentView(R.layout.activity_main);
+  
+    setTitle("Searching for server...");
     TextView tv = (TextView) findViewById(R.id.noserveronlinetv);
     tv.setVisibility(View.INVISIBLE);
     LinearLayout ll = (LinearLayout) findViewById(R.id.ll);
     ll.removeAllViews();
     ProgressBar pb = (ProgressBar) findViewById(R.id.pb);
     pb.setVisibility(View.VISIBLE);
-    
+    Button b = (Button)findViewById(R.id.retryudpscan);
+    b.setVisibility(View.INVISIBLE);
+  
+    server_on = false;
+    server_ip = "unset";
+  
     if(events!=null && !events.isAlive()) events.start();
     
     UDPBroadcast.startNewBroadcastRequest(4960, "ping", true, udpWaitTimeout, new UDPBroadcast.UDPBroadcastResponseListener() {
@@ -218,7 +168,7 @@ public class MainActivity extends AppCompatActivity {
     if (pb != null) {
       pb.setVisibility(View.INVISIBLE);
     }
-    if (server_on == false) {
+    if (!server_on) {
       Button b = (Button)findViewById(R.id.retryudpscan);
       b.setVisibility(View.VISIBLE);
       b.setOnClickListener( new View.OnClickListener(){

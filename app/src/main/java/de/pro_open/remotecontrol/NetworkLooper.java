@@ -10,13 +10,24 @@ import java.io.IOException;
 import java.security.InvalidParameterException;
 
 public class NetworkLooper extends Thread {
-  static Runnable sendLine(final TcpConnection conToServer, final String s) {
+  static Runnable sendLine(final TcpConnection conToServer, final String s, final TCPCallback cb) {
+    if(s==null) throw new InvalidParameterException("string to send cannot be null");
+    if(conToServer==null) throw new InvalidParameterException("received null connection to server");
+    
     return new Runnable() {
       @Override
       public void run() {
-        conToServer.writeLine(s);
+        
+        if(conToServer.writeLine(s)) {
+          conToServer.flush();
+          cb.callback(conToServer);
+        } else {
+          cb.reject("could not send line");
+        }
+        
       }
     };
+    
   }
   
   static Runnable TCPConnect(final String ip, final int port, final TCPCallback callback) {
@@ -29,9 +40,11 @@ public class NetworkLooper extends Thread {
       public void run() {
         try {
           System.out.println("conToServer " + ip);
-          callback.callback(TCPManager.connect(ip, port, false, null));
+          TcpConnection connection = TCPManager.connect(ip, port, false, null);
+          callback.callback(connection);
         } catch (IOException e) {
-          e.printStackTrace();
+          callback.reject(e.getMessage());
+          System.err.println("handled "+e.getMessage());
         }
         
       }
@@ -45,7 +58,6 @@ public class NetworkLooper extends Thread {
       System.err.println("Handler not ready!");
       return;
     }
-    System.out.println("Handler sending a message");
     mHandler.post(r);
   }
   
