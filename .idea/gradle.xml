@@ -10,8 +10,8 @@
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
         <option name="modules">
           <set>
-            <option value="/mnt/filez/projects/android/RemoteControlAndroid" />
-            <option value="/mnt/filez/projects/android/RemoteControlAndroid/app" />
+            <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/remoteControlAndroid" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />
